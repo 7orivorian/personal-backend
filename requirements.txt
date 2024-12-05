@@ -1,0 +1,14 @@
+Flask
+SQLAlchemy
+Flask-BCrypt
+Flask-JWT-Extended
+python-dotenv
+Flask-Migrate
+Flask-SQLAlchemy
+marshmallow
+marshmallow-sqlalchemy
+pytest
+Flask-Cors
+Flask-RESTful
+email-validator
+supabase
