@@ -794,4 +794,3 @@ cython_debug/
 ### Flask template
 instance/*
 !instance/.gitignore
-.flaskenv
