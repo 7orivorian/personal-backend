@@ -11,4 +11,4 @@ pytest
 Flask-Cors
 Flask-RESTful
 email-validator
-supabase
+python-slugify
