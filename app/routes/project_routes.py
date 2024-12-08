@@ -75,8 +75,14 @@ def update_project(project_id):
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
-@bp.route('/<int:project_id>', methods=['DELETE'])
-def delete_project(project_id):
-    project = Project.query.get_or_404(project_id)
+@bp.route('delete/id/<int:project_id>', methods=['DELETE'])
+def delete_project_by_id(project_id):
+    project = Project.query.get_or_404(project_id, description="Project not found")
+    project.delete()
+    return jsonify({"message": "Project deleted successfully"}), 204
+
+@bp.route('delete/slug/<string:slug>', methods=['DELETE'])
+def delete_project_by_slug(slug):
+    project = Project.query.filter_by(slug=slug).first_or_404(description="Project not found")
     project.delete()
     return jsonify({"message": "Project deleted successfully"}), 204
