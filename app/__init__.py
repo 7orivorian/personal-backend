@@ -25,7 +25,14 @@ def create_app():
     bcrypt.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
-    CORS(app)
+
+    app.config["CORS_AUTOMATIC_OPTIONS"] = True
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": "*"}}
+        if app.config['FLASK_ENV'] == "development"
+        else {r"/api/*": {"origins": app.config['FRONTEND_URL']}}
+    )
 
     # Register blueprints
     from app.routes import test_routes, user_routes, project_routes, social_link_routes
