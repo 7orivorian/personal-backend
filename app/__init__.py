@@ -15,6 +15,14 @@ bcrypt = Bcrypt()
 jwt = JWTManager()
 
 
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    from app.models.revoked_token import RevokedToken
+    jti = jwt_payload["jti"]
+    revoked = RevokedToken.query.filter_by(jti=jti).first()
+    return revoked is not None  # True if token is revoked
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object("app.config.Config")
@@ -29,6 +37,7 @@ def create_app():
     app.config["CORS_AUTOMATIC_OPTIONS"] = True
     CORS(
         app,
+        supports_credentials=True,
         resources={r"/api/*": {"origins": "*"}}
         if app.config['FLASK_ENV'] == "development"
         else {r"/api/*": {"origins": app.config['FRONTEND_URL']}}
