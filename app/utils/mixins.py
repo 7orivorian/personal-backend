@@ -11,22 +11,26 @@ class TimestampMixin:
 
 
 class SerializerMixin:
-    """Adds a `to_dict` method for serializing models."""
+    """Adds `dump` & `to_dict` method for serializing models."""
+
+    def dump(self):
+        return self.to_dict()
 
     def to_dict(self, exclude=None):
         exclude = exclude or []
         if hasattr(self, '__table__'):
-            return {
+            serialized_data = {
                 column.name: getattr(self, column.name)
                 for column in self.__table__.columns
                 if column.name not in exclude
             }
+            return serialized_data
         raise AttributeError(f"{self.__class__.__name__} does not have a __table__ attribute.")
 
 
 class CRUDMixin(object):
     """
-    A Mixin to offer CRUD(Create, read, update, delete) operations for SQLAlchemy ORM models.
+    A Mixin to offer CRUD(create, read, update, delete) operations for models.
     """
     __table_args__ = {'extend_existing': True}
 

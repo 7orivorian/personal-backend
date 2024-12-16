@@ -794,3 +794,6 @@ cython_debug/
 ### Flask template
 instance/*
 !instance/.gitignore
+
+### Wakatime
+.wakatime-project

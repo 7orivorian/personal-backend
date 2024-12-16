@@ -2,11 +2,11 @@ from flask import Blueprint, jsonify, request, abort, make_response
 from flask_bcrypt import check_password_hash
 from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies, create_refresh_token, \
     set_refresh_cookies, get_jwt_identity, jwt_required, get_jwt, get_csrf_token
-from marshmallow import ValidationError
 
-from app.models.revoked_token import RevokedTokenSchema
-from app.models.user import User, db, UserCreateSchema, UserSchema
-from app.utils.validators import validate_user_id
+from app.exception.validation_error import ValidationError
+from app.models import RevokedToken
+from app.models.user import User, db
+from app.utils.validators import validate_user_id, admin_required
 
 API_PREFIX: str = '/api/v1/users'
 bp = Blueprint('user_routes', __name__, url_prefix=API_PREFIX)
@@ -15,18 +15,18 @@ bp = Blueprint('user_routes', __name__, url_prefix=API_PREFIX)
 @bp.route('/', methods=['GET'])
 def get_users():
     users = User.query.all()
-    return jsonify([UserSchema().dump(user) for user in users] if users else [])
+    return jsonify([user.dump() for user in users] if users else [])
 
 
 @bp.route('/<int:user_id>', methods=['GET'])
+@admin_required
 def get_user(user_id):
     if not validate_user_id(user_id):
         return abort(400, "Invalid user ID")
 
     user = User.query.get(user_id)
     if user:
-        user_schema = UserCreateSchema()
-        return jsonify(user_schema.dump(user))
+        return jsonify(user.dump())
     else:
         return jsonify({
             "message": "User not found",
@@ -43,26 +43,23 @@ def create_user():
             "error": "No data provided"
         }), 400
 
-    user_schema = UserCreateSchema()
-
     try:
-        # Validate and deserialize input data into a User object
-        new_user = user_schema.load(data)
+        new_user = User(**data)
 
         # Persist the new user in the database
         new_user.save()
 
         # Serialize the created user for the response
-        return jsonify(user_schema.dump(new_user)), 201
+        return jsonify(new_user.dump()), 201
 
     except ValidationError as e:  # Handle schema validation errors
         return jsonify({
-            "message": "Invalid input data",
-            "error": "Validation error",
-            "errors": e.messages
+            "message": e.message,
+            "error": "Validation error"
         }), 400
 
     except Exception as e:
+        print(e)
         db.session.rollback()
         return jsonify({"error": "An unexpected error occurred"}), 500
 
@@ -73,25 +70,30 @@ def login_user():
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
-    user_schema = UserSchema()
-
     try:
-        # Validate input data
-        validated_data = user_schema.load(data, partial=True)
-        username = validated_data.get("username")
-        password = validated_data.get("password")
+        username = data['username']
+        password = data['password']
 
-        if not username or not password:
+        if not password:
             return jsonify({
-                "message": "Username and password required",
-                "error": "Invalid credentials"
+                "message": "Password required",
+                "error": "Bad request"
             }), 400
 
-        # Query the user by username
+        if not username:
+            return jsonify({
+                "message": "Username required",
+                "error": "Bac request"
+            }), 400
+
         user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({
+                "message": f"User with username '{username}' does not exist",
+            })
 
         # Validate password
-        if user and check_password_hash(user.password, password):
+        if check_password_hash(user.password, password):
             # Create access token
             access_token = create_access_token(identity=str(user.id))
             refresh_token = create_refresh_token(identity=str(user.id))
@@ -113,17 +115,17 @@ def login_user():
             return response
         else:
             return jsonify({
-                "message": "Invalid username or password",
+                "message": "Incorrect password",
                 "error": "Invalid credentials"
             }), 401
 
     except ValidationError as e:
         return jsonify({
-            "message": "Invalid input data",
-            "error": "Validation error",
-            "errors": e.messages
+            "message": e.message,
+            "error": "Validation error"
         }), 400
     except Exception as e:
+        print(e)
         return jsonify({
             "message": "An error occurred while logging in",
             "error": "An unexpected error occurred"
@@ -146,11 +148,10 @@ def logout_user():
         }), 401
 
     jti = jwt_data['jti']
-
-    schema = RevokedTokenSchema()
+    user_id = get_jwt_identity()
 
     try:
-        revoked_token = schema.load({"jti": jti})
+        revoked_token = RevokedToken(jti=jti, user_id=user_id)
         revoked_token.save()
 
         response = make_response(jsonify({"message": "Logout successful"}), 200)
@@ -159,14 +160,14 @@ def logout_user():
 
     except ValidationError as e:
         return jsonify({
-            "message": "Invalid input data",
-            "error": "Validation error",
-            "errors": e.messages
+            "message": e.message,
+            "error": "Validation error"
         }), 400
     except Exception as e:
+        print(e)
         return jsonify({
             "message": "An error occurred while logging out",
-            "error": "An unexpected error occurred"
+            "error": "Unknown error"
         }), 500
 
 

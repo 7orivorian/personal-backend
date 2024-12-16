@@ -44,10 +44,13 @@ def create_app():
     )
 
     # Register blueprints
-    from app.routes import test_routes, user_routes, project_routes, social_link_routes
-    app.register_blueprint(test_routes)
+    from app.routes import test_routes, user_routes, project_routes, social_link_routes, admin_routes, tag_routes
+    if app.config['FLASK_ENV'] == "development":
+        app.register_blueprint(test_routes)
     app.register_blueprint(user_routes)
     app.register_blueprint(project_routes)
     app.register_blueprint(social_link_routes)
+    app.register_blueprint(tag_routes)
+    app.register_blueprint(admin_routes)
 
     return app
