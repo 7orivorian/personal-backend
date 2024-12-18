@@ -60,5 +60,11 @@ class User(db.Model, TimestampMixin, SerializerMixin, CRUDMixin, BaseModel):
             raise ValidationError("Invalid password. Must be between 16 and 128 characters.")
         return hash_password(value)
 
+    @validates("is_admin")
+    def validate_is_admin(self, key, value):
+        if not value or not isinstance(value, bool):
+            return False
+        return value
+
     def dump(self):
         return self.to_dict(exclude=["password", "updated_at"])
