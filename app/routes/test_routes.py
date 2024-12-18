@@ -22,10 +22,7 @@ def ping():
 def ping_secured():
     current_user = get_jwt_identity()
     if current_user:
-        user = User.query.get_or_404(current_user)
-        user.is_admin = True
-        user.save()
-        return jsonify(user.dump()), 200
+        return jsonify({"message": "Halllooo!"}), 200
     return jsonify({"message": "bad request or not auth"}), 401
 
 

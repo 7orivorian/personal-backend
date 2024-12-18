@@ -13,3 +13,4 @@ class Config:
     JWT_COOKIE_SECURE = FLASK_ENV == "production"
     JWT_COOKIE_HTTPONLY = True
     JWT_COOKIE_CSRF_PROTECT = True
+    JWT_CSRF_IN_COOKIES = False
