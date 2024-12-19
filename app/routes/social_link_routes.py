@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request
 from app import db
 from app.exception.validation_error import ValidationError
 from app.models.social_link import SocialLink
+from app.utils.utils import is_present
 from app.utils.validators import admin_required
 
 API_PREFIX: str = '/api/v1/sociallinks'
@@ -59,13 +60,13 @@ def update_social_link_by_id(social_link_id):
     social_link = SocialLink.query.get_or_404(social_link_id)
 
     try:
-        if 'name' in data:
+        if is_present(data, 'name'):
             social_link.name = data['name']
-        if 'description' in data:
+        if is_present(data, 'description'):
             social_link.description = data['description']
-        if 'url' in data:
+        if is_present(data, 'url') :
             social_link.url = data['url']
-        if 'icon' in data:
+        if is_present(data, 'icon'):
             social_link.icon = data['icon']
 
         # Persist in the database

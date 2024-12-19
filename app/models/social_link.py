@@ -14,7 +14,7 @@ name_regex = re.compile(r'^[a-zA-Z0-9_]{3,16}$')
 class SocialLink(db.Model, BaseModel, CRUDMixin, SerializerMixin, TimestampMixin):
     __tablename__ = 'social_links'
 
-    name = Column(String(16), unique=True, nullable=False)
+    name = Column(String(16), nullable=False)
     description = Column(String(255), nullable=False)
     url = Column(String(255), nullable=True)
     icon = Column(String(255), nullable=False)
@@ -25,33 +25,34 @@ class SocialLink(db.Model, BaseModel, CRUDMixin, SerializerMixin, TimestampMixin
     @validates("name")
     def validate_name(self, key, value):
         if not value:
-            raise ValidationError("Name is required.")
+            raise ValidationError(f"Name is required. ({self.name})")
         if not name_regex.match(value):
             raise ValidationError(
-                "Invalid name. Must be between 3 and 16 characters, and can only contain letters, numbers, and underscores."
+                f"Invalid name. Must be between 3 and 16 characters, and can only contain letters, numbers, and underscores. ({self.name})"
             )
         if SocialLink.query.filter_by(name=value).first():
-            raise ValidationError("Name already in use.")
+            raise ValidationError(f"Name already in use. ({self.name})")
         return value
 
     @validates("description")
     def validate_description(self, key, value):
         if not value:
-            raise ValidationError("Description is required.")
+            raise ValidationError(f"Description is required. ({self.name})")
         if len(value) < 1 or len(value) > 255:
-            raise ValidationError("Invalid description. Must be between 1 and 255 characters.")
+            raise ValidationError(f"Invalid description. Must be between 1 and 255 characters. ({self.name})")
         return value
 
     @validates("url")
     def validate_url(self, key, value):
         if value:
-            if not value.startswith("http"):
-                raise ValidationError("Invalid URL. Must start with 'http' or 'https'.")
+            if not (value.startswith("http") or value.startswith("mailto:")):
+                raise ValidationError(f"Invalid URL. Must start with 'http' or 'https'. ({self.name})")
         return value
 
     @validates("icon")
     def validate_icon(self, key, value):
         if not value:
-            raise ValidationError("Icon is required.")
+            raise ValidationError(f"Icon is required. ({self.name})")
         if len(value) < 1 or len(value) > 255:
-            raise ValidationError("Invalid icon. Must be between 1 and 255 characters.")
+            raise ValidationError(f"Invalid icon. Must be between 1 and 255 characters. ({self.name})")
+        return value
