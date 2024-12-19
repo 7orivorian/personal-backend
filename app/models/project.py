@@ -11,7 +11,7 @@ from app.models.base import BaseModel
 from app.utils.mixins import CRUDMixin, SerializerMixin, TimestampMixin
 from app.utils.utils import is_valid_date
 
-name_regex = re.compile(r'^[a-zA-Z0-9_]{3,120}$')
+name_regex = re.compile(r'^[a-zA-Z0-9_ ]{3,120}$')
 
 
 def generate_unique_slug(name):
@@ -58,89 +58,16 @@ class Project(db.Model, BaseModel, CRUDMixin, SerializerMixin, TimestampMixin):
             kwargs["slug"] = generate_unique_slug(kwargs.get("name", ""))
         super().__init__(**kwargs)
 
-    @validates("slug")
-    def validate_slug(self, key, value):
-        if not value:
-            raise ValidationError("Slug is required.")
-        if len(value) < 3 or len(value) > 64:
-            raise ValidationError("Invalid slug. Must be between 3 and 64 characters.")
-        if Project.query.filter_by(slug=value).first():
-            raise ValidationError("Slug already in use.")
-        return value
+    def add_tag(self, tag):
+        if tag not in self.tags:
+            self.tags.append(tag)
 
-    @validates("name")
-    def validate_name(self, key, value):
-        if not value:
-            raise ValidationError("Name is required.")
-        if not name_regex.match(value):
-            raise ValidationError(
-                "Invalid name. Must be between 3 and 120 characters, and can only contain letters, numbers, and underscores.")
-        return value
+    def remove_tag(self, tag):
+        if tag not in self.tags:
+            self.tags.remove(tag)
 
-    @validates("description")
-    def validate_description(self, key, value):
-        if not value:
-            raise ValidationError("Description is required.")
-        if len(value) < 1 or len(value) > 255:
-            raise ValidationError("Invalid description. Must be between 1 and 255 characters.")
-        return value
-
-    @validates("url")
-    def validate_url(self, key, value):
-        if value:
-            if not value.startswith("http"):
-                raise ValidationError("Invalid URL. Must start with 'http' or 'https'.")
-        return value
-
-    @validates("image_url")
-    def validate_image_url(self, key, value):
-        if value:
-            if not value.startswith("http"):
-                raise ValidationError("Invalid image URL. Must start with 'http' or 'https'.")
-        return value
-
-    @validates("source_code_url")
-    def validate_source_code_url(self, key, value):
-        if value:
-            if not value.startswith("http"):
-                raise ValidationError("Invalid source code URL. Must start with 'http' or 'https'.")
-        return value
-
-    @validates("type")
-    def validate_type(self, key, value):
-        if not value:
-            raise ValidationError("Type is required.")
-        if value not in ["personal", "commission"]:
-            raise ValidationError("Invalid type. Must be either 'personal' or 'commission'.")
-        return value
-
-    @validates("status")
-    def validate_status(self, key, value):
-        if not value:
-            raise ValidationError("Status is required.")
-        if value not in ["completed", "maintained", "developing"]:
-            raise ValidationError("Invalid status. Must be either 'completed', 'maintained', or 'developing'.")
-        return value
-
-    @validates("begin_date")
-    def validate_begin_date(self, key, value):
-        if not value:
-            raise ValidationError("Begin date is required.")
-        if not is_valid_date(value):
-            raise ValidationError(
-                "Invalid begin date. Must be in the format YYYY-MM-DD."
-            )
-        return datetime.strptime(value, "%Y-%m-%d").date()
-
-    @validates("completion_date")
-    def validate_completion_date(self, key, value):
-        if value:
-            if not is_valid_date(value):
-                raise ValidationError(
-                    "Invalid completion date. Must be in the format YYYY-MM-DD."
-                )
-            return datetime.strptime(value, "%Y-%m-%d").date()
-        return None
+    def clear_tags(self):
+        self.tags.clear()
 
     def dump(self):
         return self.to_dict()
@@ -160,6 +87,90 @@ class Project(db.Model, BaseModel, CRUDMixin, SerializerMixin, TimestampMixin):
             return serialized_data
         raise AttributeError(f"{self.__class__.__name__} does not have a __table__ attribute.")
 
+    @validates("slug")
+    def validate_slug(self, key, value):
+        if not value:
+            raise ValidationError(f"Slug is required. ({self.name})")
+        if len(value) < 3 or len(value) > 64:
+            raise ValidationError(f"Invalid slug. Must be between 3 and 64 characters. ({self.name})")
+        if Project.query.filter_by(slug=value).first():
+            raise ValidationError(f"Slug already in use. ({self.name})")
+        return value
+
+    @validates("name")
+    def validate_name(self, key, value):
+        if not value:
+            raise ValidationError(f"Name is required. ({self.name})")
+        if not name_regex.match(value):
+            raise ValidationError(
+                f"Invalid name. Must be between 3 and 120 characters, and can only contain letters, numbers, underscores, and spaces. ({self.name})")
+        return value
+
+    @validates("description")
+    def validate_description(self, key, value):
+        if not value:
+            raise ValidationError(f"Description is required. ({self.name})")
+        if len(value) < 1 or len(value) > 255:
+            raise ValidationError(f"Invalid description. Must be between 1 and 255 characters. ({self.name})")
+        return value
+
+    @validates("url")
+    def validate_url(self, key, value):
+        if value:
+            if not value.startswith("http"):
+                raise ValidationError(f"Invalid URL. Must start with 'http' or 'https'. ({self.name})")
+        return value
+
+    @validates("image_url")
+    def validate_image_url(self, key, value):
+        if value:
+            if not value.startswith("http"):
+                raise ValidationError(f"Invalid image URL. Must start with 'http' or 'https'. ({self.name})")
+        return value
+
+    @validates("source_code_url")
+    def validate_source_code_url(self, key, value):
+        if value:
+            if not value.startswith("http"):
+                raise ValidationError(f"Invalid source code URL. Must start with 'http' or 'https'. ({self.name})")
+        return value
+
+    @validates("type")
+    def validate_type(self, key, value):
+        if not value:
+            raise ValidationError(f"Type is required. ({self.name})")
+        if value not in ["personal", "commission", "other"]:
+            raise ValidationError(f"Invalid type. Must be one of 'personal', 'commission', or 'other'. ({self.name})")
+        return value
+
+    @validates("status")
+    def validate_status(self, key, value):
+        if not value:
+            raise ValidationError(f"Status is required. ({self.name})")
+        if value not in ["completed", "maintained", "developing"]:
+            raise ValidationError(f"Invalid status. Must be one of 'completed', 'maintained', or 'developing'. ({self.name})")
+        return value
+
+    @validates("begin_date")
+    def validate_begin_date(self, key, value):
+        if not value:
+            raise ValidationError(f"Begin date is required. ({self.name})")
+        if not is_valid_date(value):
+            raise ValidationError(
+                f"Invalid begin date. Must be in the format YYYY-MM-DD. ({self.name})"
+            )
+        return datetime.strptime(value, "%Y-%m-%d").date()
+
+    @validates("completion_date")
+    def validate_completion_date(self, key, value):
+        if value:
+            if not is_valid_date(value):
+                raise ValidationError(
+                    f"Invalid completion date. Must be in the format YYYY-MM-DD. ({self.name})"
+                )
+            return datetime.strptime(value, "%Y-%m-%d").date()
+        return None
+
 
 class Tag(db.Model, BaseModel, CRUDMixin, SerializerMixin, TimestampMixin):
     __tablename__ = 'tags'
@@ -176,15 +187,13 @@ class Tag(db.Model, BaseModel, CRUDMixin, SerializerMixin, TimestampMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @validates("name")
-    def validate_name(self, key, value):
-        if not value:
-            raise ValidationError("Name is required.")
-        if len(value) < 1 or len(value) > 16:
-            raise ValidationError("Invalid name. Must be between 1 and 16 characters.")
-        if Tag.query.filter_by(name=value).first():
-            raise ValidationError("Name already in use.")
-        return value
+    @staticmethod
+    def get_or_create(name, is_tech=False, commit=True):
+        tag = Tag.query.filter_by(name=name).first()
+        if not tag:
+            tag = Tag(name=name, is_tech=is_tech)
+            tag.save(commit=commit)
+        return tag
 
     def dump(self):
         return self.to_dict()
@@ -203,3 +212,13 @@ class Tag(db.Model, BaseModel, CRUDMixin, SerializerMixin, TimestampMixin):
                     serialized_data['projects'] = [project.to_dict(partial=True) for project in self.projects]
             return serialized_data
         raise AttributeError(f"{self.__class__.__name__} does not have a __table__ attribute.")
+
+    @validates("name")
+    def validate_name(self, key, value):
+        if not value:
+            raise ValidationError(f"Name is required. ({self.name})")
+        if len(value) < 1 or len(value) > 16:
+            raise ValidationError(f"Invalid name. Must be between 1 and 16 characters. ({self.name})")
+        if Tag.query.filter_by(name=value).first():
+            raise ValidationError(f"Name already in use. ({self.name})")
+        return value

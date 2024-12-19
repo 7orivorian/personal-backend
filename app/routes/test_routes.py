@@ -4,7 +4,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.exception.validation_error import ValidationError
 from app.models import SocialLink
-from app.models.models import get_or_create
 from app.models.project import Tag, Project
 from app.models.user import User
 
@@ -34,29 +33,31 @@ def create_sample_data():
     for project_data in projects:
         try:
             # Extract tags information (if provided)
-            # Default to empty list if 'tags' key is not present
-            tags_data = project_data.pop('tags', [])
-            # Default to empty list if 'tech_stack' key is not present
-            tech_tags_data = project_data.pop('tech_stack', [])
+            tags_data = project_data.pop('tags', [])  # Default to empty list if 'tags' key is not present
+            tech_tags_data = project_data.pop('tech', [])  # Default to empty list if 'tech_stack' key is not present
 
             # Validate and deserialize input data into Project object
-            new_project = Project(**project_data)
+            project = Project(**project_data)
+
+            # Project must be in session before any tags are added
+            db.session.add(project)
 
             # Attach tag objects to the project
             for tag_name in tags_data:
-                tag = get_or_create(db.session, Tag, name=tag_name, is_tech=False)
-                new_project.tags.append(tag)
+                tag = Tag.get_or_create(name=tag_name, is_tech=False)
+                project.add_tag(tag)
 
             # Attach tech tags objects to the project
             for tag_name in tech_tags_data:
-                tag = get_or_create(db.session, Tag, name=tag_name, is_tech=True)
-                new_project.tags.append(tag)
+                tag = Tag.get_or_create(name=tag_name, is_tech=True)
+                project.add_tag(tag)
 
             # Persist the new project in the database
-            new_project.save()
+            project.save()
 
         except ValidationError as e:  # Handle schema validation errors
             print(e)  # Log unexpected errors for debugging
+            print(project_data)
             continue
 
         except Exception as e:

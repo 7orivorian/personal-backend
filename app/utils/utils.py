@@ -13,3 +13,7 @@ date_regex = r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$"
 
 def is_valid_date(date_string):
     return bool(re.match(date_regex, date_string))
+
+
+def is_present(data, key):
+    return not (data[key] is None or data[key] == '')
