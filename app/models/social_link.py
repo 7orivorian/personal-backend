@@ -30,8 +30,6 @@ class SocialLink(db.Model, BaseModel, CRUDMixin, SerializerMixin, TimestampMixin
             raise ValidationError(
                 f"Invalid name. Must be between 3 and 16 characters, and can only contain letters, numbers, and underscores. ({self.name})"
             )
-        if SocialLink.query.filter_by(name=value).first():
-            raise ValidationError(f"Name already in use. ({self.name})")
         return value
 
     @validates("description")
