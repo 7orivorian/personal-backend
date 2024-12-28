@@ -16,7 +16,7 @@ username_regex = re.compile(r'^[a-zA-Z0-9_]{3,16}$')
 class User(db.Model, TimestampMixin, SerializerMixin, CRUDMixin, BaseModel):
     __tablename__ = 'users'
 
-    email = Column(String(120), unique=True, nullable=False)
+    email = Column(String(120), unique=False, nullable=False)
     username = Column(String(80), unique=True, nullable=False)
     password = Column(String(128), nullable=False)
     email_confirmed = Column(Boolean, default=False)

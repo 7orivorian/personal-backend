@@ -20,7 +20,6 @@ def get_users():
     return jsonify([user.dump() for user in users] if users else [])
 
 
-# Allow registration as admin
 @bp.route('/', methods=['POST'])
 def create_user():
     data = request.get_json()
@@ -31,7 +30,11 @@ def create_user():
         }), 400
 
     try:
-        new_user = User(**data)
+        # Remove 'is_admin' key from input data if it exists
+        if 'is_admin' in data:
+            del data['is_admin']
+
+        new_user = User(is_admin=False, **data)
 
         # Persist the new user in the database
         new_user.save()
