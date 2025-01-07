@@ -40,7 +40,7 @@ def create_app():
         supports_credentials=True,
         resources={r"/api/*": {"origins": "*"}}
         if app.config['FLASK_ENV'] == "development"
-        else {r"/api/*": {"origins": app.config['FRONTEND_URL']}}
+        else {r"/api/*": {"origins": app.config['ALLOWED_ORIGINS']}}
     )
 
     # Register blueprints
