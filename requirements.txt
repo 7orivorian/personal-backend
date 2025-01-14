@@ -10,3 +10,4 @@ email-validator
 python-slugify
 python-dotenv
 pytest
+PyMySQL
