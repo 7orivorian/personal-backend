@@ -11,3 +11,4 @@ python-slugify
 python-dotenv
 pytest
 PyMySQL
+gunicorn
