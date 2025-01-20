@@ -6,7 +6,7 @@ from app.models.social_link import SocialLink
 from app.utils.utils import is_present
 from app.utils.validators import admin_required
 
-API_PREFIX: str = '/api/v1/sociallinks'
+API_PREFIX: str = '/v1/sociallinks'
 bp = Blueprint('social_link_routes', __name__, url_prefix=API_PREFIX)
 
 

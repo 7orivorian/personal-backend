@@ -7,7 +7,7 @@ from app.models import SocialLink
 from app.models.project import Tag, Project
 from app.models.user import User
 
-API_PREFIX = '/api/v1/test'
+API_PREFIX = '/v1/test'
 bp = Blueprint('test_routes', __name__, url_prefix=API_PREFIX)
 
 

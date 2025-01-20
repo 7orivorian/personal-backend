@@ -6,7 +6,7 @@ from app.models.project import Project, Tag
 from app.utils.utils import is_present
 from app.utils.validators import admin_required
 
-API_PREFIX: str = '/api/v1/projects'
+API_PREFIX: str = '/v1/projects'
 bp = Blueprint('project_routes', __name__, url_prefix=API_PREFIX)
 
 

@@ -9,7 +9,7 @@ from app.models import RevokedToken
 from app.models.user import User, db
 from app.utils.validators import validate_user_id, admin_required
 
-API_PREFIX: str = '/api/v1/users'
+API_PREFIX: str = '/v1/users'
 bp = Blueprint('user_routes', __name__, url_prefix=API_PREFIX)
 
 
