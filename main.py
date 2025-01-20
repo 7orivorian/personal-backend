@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 
 from app import create_app, db
@@ -18,4 +19,4 @@ if __name__ == "__main__":
 
     clean_revoked_tokens()
 
-    app.run(debug=True)
+    app.run(debug=True, port=os.getenv("PORT", default=8080))
