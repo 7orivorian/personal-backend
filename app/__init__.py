@@ -38,9 +38,7 @@ def create_app():
     CORS(
         app,
         supports_credentials=True,
-        resources={r"/*": {"origins": "*"}}
-        if app.config['FLASK_ENV'] == "development"
-        else {r"/*": {"origins": app.config['ALLOWED_ORIGINS']}}
+        resources={r"/*": {"origins": app.config['ALLOWED_ORIGINS']}}
     )
 
     # Register blueprints

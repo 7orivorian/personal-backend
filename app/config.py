@@ -24,4 +24,4 @@ class Config:
     JWT_SESSION_COOKIE = False
     JWT_CSRF_IN_COOKIES = False
 
-    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS")
+    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
