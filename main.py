@@ -17,6 +17,6 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
-    clean_revoked_tokens()
-
     app.run(debug=True, port=os.getenv("PORT", default=8080))
+
+    clean_revoked_tokens()
