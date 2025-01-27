@@ -36,11 +36,9 @@ def create_app():
 
     allowed_origins = "https://princeling.dev"
 
-    app.config["CORS_AUTOMATIC_OPTIONS"] = True
     CORS(
         app,
-        supports_credentials=True,
-        resources={r"/*": {"origins": allowed_origins}}
+        supports_credentials=True
     )
     print(f"Allowed Origins: {allowed_origins}")
 
