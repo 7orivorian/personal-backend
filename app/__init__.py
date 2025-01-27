@@ -38,7 +38,10 @@ def create_app():
 
     CORS(
         app,
-        supports_credentials=True
+        supports_credentials=True,
+        origins=allowed_origins,
+        allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
+        expose_headers=["Access-Control-Allow-Origin"]
     )
     print(f"Allowed Origins: {allowed_origins}")
 
