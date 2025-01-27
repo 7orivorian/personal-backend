@@ -34,13 +34,15 @@ def create_app():
     jwt.init_app(app)
     migrate.init_app(app, db)
 
+    allowed_origins = "https://princeling.dev"
+
     app.config["CORS_AUTOMATIC_OPTIONS"] = True
     CORS(
         app,
         supports_credentials=True,
-        resources={r"/*": {"origins": app.config['ALLOWED_ORIGINS']}}
+        resources={r"/*": {"origins": allowed_origins}}
     )
-    print(f"Allowed Origins: {app.config['ALLOWED_ORIGINS']}")
+    print(f"Allowed Origins: {allowed_origins}")
 
     # Register blueprints
     from app.routes import test_routes, user_routes, project_routes, social_link_routes, admin_routes, tag_routes
