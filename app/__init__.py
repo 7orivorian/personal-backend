@@ -1,3 +1,5 @@
+import logging
+
 from dotenv import load_dotenv
 from flask import Flask
 from flask_bcrypt import Bcrypt
@@ -24,6 +26,8 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 
 
 def create_app():
+    logging.basicConfig(level=logging.INFO)
+
     app = Flask(__name__)
     app.config.from_object("app.config.Config")
     app.url_map.strict_slashes = False
@@ -40,6 +44,7 @@ def create_app():
         supports_credentials=True,
         resources={r"/*": {"origins": app.config['ALLOWED_ORIGINS']}}
     )
+    logging.info(f"Allowed Origins: {app.config['ALLOWED_ORIGINS']}")
 
     # Register blueprints
     from app.routes import test_routes, user_routes, project_routes, social_link_routes, admin_routes, tag_routes
