@@ -1,6 +1,8 @@
 import os
 from datetime import datetime, timedelta
 
+from flask_migrate import upgrade
+
 from app import create_app, db
 
 app = create_app()
@@ -24,6 +26,8 @@ def after_request(response):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
+
+    upgrade()
 
     app.run(debug=True, port=os.getenv("PORT", default=8080))
 
